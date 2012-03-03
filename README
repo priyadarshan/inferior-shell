@@ -22,12 +22,20 @@ via e.g. ssh-agent.
 The name inferior-shell was suggested by Michael Livshin,
 as inspired by the equivalent notion in GNU Emacs.
 
+Example use of inferior-shell, from the rpm system:
+(defun rpms-installed (&key (packagenames t) host)
+  (run/lines
+   `(pipe (rpm -qa)
+          ,@(unless (eq packagenames t)
+              `((egrep ("^(" ,@(loop :for (name . more) :on packagenames
+                                 :collect name :when more :collect "|")
+                             ")-[^-]+-[^-]+$")))))
+   :host host))
+
 ==== Exported Functionality ====
 
 The inferior-shell library creates a package INFERIOR-SHELL,
 that exports the following macros and functions:
-
-(TO BE DOCUMENTED. IN THE MEANTIME, CONSULT THE SOURCES)
 
 PARSE-PROCESS-SPEC SPEC
   parse an expression in the process-spec mini-language into
