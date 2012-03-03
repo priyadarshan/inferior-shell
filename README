@@ -29,13 +29,62 @@ that exports the following macros and functions:
 
 (TO BE DOCUMENTED. IN THE MEANTIME, CONSULT THE SOURCES)
 
-PARSE-PROCESS-SPEC
-PRINT-PROCESS-SPEC
-RUN
-RUN/LINES
-RUN/S
-RUN/SS
+PARSE-PROCESS-SPEC SPEC
+  parse an expression in the process-spec mini-language into
+  objects specifying a pipeline of processes to be executed.
+  See the PROCESS-SPEC mini-language below.
 
+PRINT-PROCESS-SPEC SPEC &OPTIONAL OUTPUT
+  print a process specification to given OUTPUT
+  into a portable form usable by a Unix shell.
+  OUTPUT is as per FORMAT's stream output argument,
+  defaults to NIL for returning the result as a string.
+  SPEC can be a parsed PROCESS-SPEC object,
+  a CONS to be parsed by PARSE-PROCESS-SPEC,
+  or a string for a process-spec that has already been formatted.
+
+*CURRENT-HOST-NAMES*
+  a variable, a list of strings, the aliases for the localhost.
+
+CURRENT-HOST-NAME-P X
+  a function, returns true if X is a string member of *CURRENT-HOST-NAMES*
+
+INITIALIZE-CURRENT-HOST-NAMES
+  function that initializes the *CURRENT-HOST-NAMES*
+  with "localhost" and the results from $(hostname -s) and $(hostname -f).
+
+RUN CMD &KEY ON-ERROR TIME SHOW HOST OUTPUT
+  RUN will execute the given command CMD, which can be
+  a CONS to be parsed by PARSE-PROCESS-SPEC,
+  a PROCESS-SPEC object already parsed,
+  or a string to be passed to a Unix shell.
+  ON-ERROR specifies behavior in case the command doesn't successfully exit
+  with exit code 0, as per FARE-UTILS's ERROR-BEHAVIOUR provided with
+  (if a function, invoke it, if a string, issue an error with it,
+  otherwise return it as is).
+  TIME is a boolean which if true causes the execution to be timed as per TIME.
+  SHOW is a boolean which if true causes a message to be sent
+  to the *TRACE-OUTPUT* before execution.
+  HOST is either NIL (execute on localhost) or a string specifying a host
+  on which to run the command using ssh if
+  it's not an alias for localhost as recognized by CURRENT-HOST-NAME-P
+  (be sure to have passphraseless  login using ssh-agent).
+  On Windows, RUN will not succeed for pipes, only for simple commands.
+  On Unix, simple commands on localhost are executed directly, but
+  remote commands and pipes are executed by spawning a shell.
+
+RUN/S CMD &KEY ON-ERROR TIME SHOW HOST
+  RUN/S is a shorthand for RUN :OUTPUT 'STRING,
+  returning as a string what the inferior command sent to its standard output.
+
+RUN/SS CMD &KEY ON-ERROR TIME SHOW HOST
+  RUN/SS calls RUN/S then strips any line-ending at the end of the results,
+  just like a shell's `cmd` or $(cmd) would do.
+
+RUN/LINES CMD &KEY ON-ERROR TIME SHOW HOST
+  run/lines is a shorthand for RUN :OUTPUT :LINES,
+  returning as a list of one string per line (stripped of line-ending)
+  what the inferior command sent to its standard output.
 
 ==== THE PROCESS-SPEC MINI-LANGUAGE ====
 
