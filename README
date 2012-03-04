@@ -29,7 +29,7 @@ Example use of inferior-shell, from the rpm system:
           ,@(unless (eq packagenames t)
               `((egrep ("^(" ,@(loop :for (name . more) :on packagenames
                                  :collect name :when more :collect "|")
-                             ")-[^-]+-[^-]+$")))))
+                             ")-[^-]+(-[^-]+)?$")))))
    :host host))
 
 ==== Exported Functionality ====
