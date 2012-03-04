@@ -78,6 +78,13 @@ RUN CMD &KEY ON-ERROR TIME SHOW HOST OUTPUT
   it's not an alias for localhost as recognized by CURRENT-HOST-NAME-P
   (be sure to have passphraseless  login using ssh-agent).
   OUTPUT is one of
+  NIL (default) for inheriting the parent process's stdout,
+  :LINES for returning one result per line,
+  :STRING for returning the output as one big string,
+  :STRING/STRIPPED is like :STRING but strips any line-ending at the end of the results,
+  just like a shell's `cmd` or $(cmd) would do,
+  more options are accepted and you can define your own, as per
+  xcvb-driver's slurp-input-stream protocol.
   On Windows, RUN will not succeed for pipes, only for simple commands.
   On Unix, simple commands on localhost are executed directly, but
   remote commands and pipes are executed by spawning a shell.
@@ -87,13 +94,14 @@ RUN/S CMD &KEY ON-ERROR TIME SHOW HOST
   returning as a string what the inferior command sent to its standard output.
 
 RUN/SS CMD &KEY ON-ERROR TIME SHOW HOST
-  RUN/SS calls RUN/S then strips any line-ending at the end of the results,
+  RUN/S is a shorthand for RUN :OUTPUT :STRING/STRIPPED,
   just like a shell's `cmd` or $(cmd) would do.
 
 RUN/LINES CMD &KEY ON-ERROR TIME SHOW HOST
   run/lines is a shorthand for RUN :OUTPUT :LINES,
   returning as a list of one string per line (stripped of line-ending)
   what the inferior command sent to its standard output.
+
 
 ==== THE PROCESS-SPEC MINI-LANGUAGE ====
 
