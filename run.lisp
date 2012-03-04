@@ -18,23 +18,6 @@
               command return-code))
     (zerop return-code)))
 
-(defun run-program/ (command &key ignore-error-status output)
-  (check-type command cons)
-  (funcall (ecase output
-             ((nil) 'run-program/for-side-effects)
-             ((string :string) 'run-program/read-output-string)
-             ((:lines) 'run-program/read-output-lines)
-             ((:interactive) 'run-program/interactively)
-             ((:form) 'run-program/read-output-form)
-             ((:forms) 'run-program/read-output-forms))
-           command
-           :ignore-error-status ignore-error-status))
-
-(defun run-shell-command (command &rest keys &key ignore-error-status output)
-  (declare (ignore ignore-error-status output))
-  (check-type command string)
-  (apply 'run-program/ (list "/bin/sh" "-c" command) keys))
-
 (defun on-host-spec (host spec)
   (if (current-host-name-p host)
       spec
@@ -46,16 +29,18 @@
     (null
      (etypecase spec
        (string
-        (apply 'run-shell-command spec keys))
+        (apply 'run-program/ spec keys))
        (cons
         (apply 'run-process-spec (parse-process-spec spec) keys))
        (process-spec
-        (let ((rkeys (list :ignore-error-status ignore-error-status
-                           :output output)))
-          (if (and (typep spec 'command-spec)
-                   (null (command-redirections spec)))
-              (apply 'run-program/ (command-arguments spec) rkeys)
-              (apply 'run-shell-command (print-process-spec spec) rkeys))))))
+        (let ((command
+               (if (and (typep spec 'command-spec)
+                        (null (command-redirections spec)))
+                   (command-arguments spec)
+                   (print-process-spec spec))))
+          (run-program/ command
+                        :ignore-error-status ignore-error-status
+                        :output output)))))
     (string
      (apply 'run-process-spec (on-host-spec host spec) :host nil keys))
     (function
@@ -83,7 +68,14 @@
   "Like run/s, but strips the line ending off the result string;
 very much like `cmd` or $(cmd) at the shell"
   (declare (ignore on-error time show host))
-  (stripln (apply 'run/s cmd keys)))
+  (apply 'run cmd :output :string/stripped keys))
+
+(defun slurp-stream-string/stripped (input-stream)
+  (stripln (slurp-stream-string input-stream)))
+
+(defmethod slurp-input-stream ((x (eql :string/stripped)) input-stream
+                               &key &allow-other-keys)
+  (slurp-stream-string/stripped input-stream))
 
 (defun run/lines (cmd &rest keys &key on-error time show host)
   "Like run/s, but return a list of lines rather than one string"

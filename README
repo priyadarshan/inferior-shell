@@ -77,6 +77,7 @@ RUN CMD &KEY ON-ERROR TIME SHOW HOST OUTPUT
   on which to run the command using ssh if
   it's not an alias for localhost as recognized by CURRENT-HOST-NAME-P
   (be sure to have passphraseless  login using ssh-agent).
+  OUTPUT is one of
   On Windows, RUN will not succeed for pipes, only for simple commands.
   On Unix, simple commands on localhost are executed directly, but
   remote commands and pipes are executed by spawning a shell.
