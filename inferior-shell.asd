@@ -3,8 +3,7 @@
 #+sbcl (require :sb-posix)
 
 (defsystem :inferior-shell
-  :depends-on (:asdf :xcvb-driver :fare-utils :fare-matcher :fare-mop
-                     :fare-quasiquote-readtable :cl-ppcre :lambda-reader)
+  :depends-on (:asdf :xcvb-driver :fare-utils :fare-matcher :fare-quasiquote-readtable)
   :description "spawn local or remote processes and shell pipes"
   :components
   ((:file "pkgdcl")
