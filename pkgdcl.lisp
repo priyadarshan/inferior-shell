@@ -3,7 +3,7 @@
 (in-package :cl)
 
 (defpackage :inferior-shell
-  (:use :cl :fare-utils :fare-matcher :xcvb-driver :named-readtables)
+  (:use :cl :fare-utils :fare-matcher :xcvb-driver :named-readtables :fare-mop)
   (:export
    #:run #:run/s #:run/ss #:run/lines
    #:process-spec #:command-spec #:pipe-spec
