@@ -6,10 +6,20 @@
 
 (defclass process-spec (simple-print-object-mixin) ())
 
-(defclass pipe-spec (process-spec)
+(defclass sequence-spec (process-spec)
   ((processes
     :type list
-    :initarg :processes :reader pipe-processes)))
+    :initarg :processes :reader sequence-processes)))
+
+(defclass pipe-spec (sequence-spec) ())
+
+(defclass or-spec (sequence-spec) ())
+
+(defclass and-spec (sequence-spec) ())
+
+(defclass progn-spec (sequence-spec) ())
+
+(defclass fork-spec (sequence-spec) ())
 
 (defclass redirection (simple-print-object-mixin) ())
 
@@ -156,21 +166,32 @@
           (clps-current-argument c) nil)))
 
 (defun parse-process-spec (spec)
-  (match spec
-    (`(pipe ,@args)
-      (make-instance
-       'pipe-spec :processes
-       (loop :for process :in (mapcar 'parse-process-spec args)
-         :nconc (if (typep process 'pipe-spec)
-                    (pipe-processes process)
-                    (list process)))))
-    (`(,* ,@*)
-      (let ((c (make-instance 'command-parse)))
-        (dolist (elem spec)
-          (parse-command-spec-top-token c elem))
-        (command-parse-results c)))
-    (*
-     (error "Invalid process spec ~S" spec))))
+  (macrolet ((make-sequence-instance (spec-type args)
+               `(make-instance
+                 ',spec-type :processes
+                 (loop :for process :in (mapcar 'parse-process-spec ,args)
+                    :nconc (etypecase process
+                             (,spec-type (sequence-processes process))
+                             (sequence-spec (list process))
+                             (command-spec (list process)))))))
+    (match spec
+      (`(pipe ,@args)
+        (make-sequence-instance pipe-spec args))
+      (`(or ,@args)
+        (make-sequence-instance or-spec args))
+      (`(and ,@args)
+        (make-sequence-instance and-spec args))
+      (`(progn ,@args)
+        (make-sequence-instance progn-spec args))
+      (`(fork ,@args)
+        (make-sequence-instance fork-spec args))
+      (`(,* ,@*)
+        (let ((c (make-instance 'command-parse)))
+          (dolist (elem spec)
+            (parse-command-spec-top-token c elem))
+          (command-parse-results c)))
+      (*
+       (error "Invalid process spec ~S" spec)))))
 
 (defun parse-command-spec-top-token (c x)
   (labels
@@ -246,6 +267,7 @@
       (null ())
       (keyword (a (format nil "--~(~a~)" x)))
       (symbol (a (string-downcase x)))
+      (pathname (a (namestring (translate-logical-pathname x))))
       (cons (c x)))))
 
 (defun parse-command-spec-token (c x)
@@ -259,6 +281,7 @@
            (null ())
            (keyword (e (format nil "--~(~a~)" x)))
            (symbol (e (string-downcase x)))
+           (pathname (e (namestring (translate-logical-pathname x))))
            (cons (c x))))
        (c (x)
          (match x
@@ -289,13 +312,32 @@
         (loop :for r :in redirections :do
           (princ " " s) (print-process-spec r s))))))
 
-(defmethod print-process-spec ((spec pipe-spec) &optional s)
+(defun print-process-sequence-joined (spec separator empty s &optional tail)
   (with-output-stream (s)
-    (let ((processes (pipe-processes spec)))
+    (let ((processes (sequence-processes spec)))
       (if processes
-          (loop :for (p . rest) :on processes :do
-            (print-process-spec p s) (when rest (princ " | " s)))
-          (princ "cat" s)))))
+          (progn
+            (princ "(" s)
+            (loop :for (p . rest) :on processes :do
+               (print-process-spec p s) (when rest (princ separator s)))
+            (princ ")" s)
+            (when tail (princ tail s)))
+          (princ empty s)))))
+
+(defmethod print-process-spec ((spec pipe-spec) &optional s)
+  (print-process-sequence-joined spec " | " "cat" s))
+
+(defmethod print-process-spec ((spec or-spec) &optional s)
+  (print-process-sequence-joined spec " || " "false" s))
+
+(defmethod print-process-spec ((spec and-spec) &optional s)
+  (print-process-sequence-joined spec " && " "true" s))
+
+(defmethod print-process-spec ((spec progn-spec) &optional s)
+  (print-process-sequence-joined spec "; " "true" s))
+
+(defmethod print-process-spec ((spec fork-spec) &optional s)
+  (print-process-sequence-joined spec "; " "true" s " &"))
 
 (defmethod print-process-spec ((spec string) &optional s)
   (xcvb-driver::output-string spec s))
