@@ -23,7 +23,7 @@
       spec
       `(ssh ,host ,(print-process-spec spec))))
 
-(defmethod run-spec ((spec process-spec) &rest keys &key ignore-error-status output)
+(defun run-spec (spec &rest keys &key ignore-error-status output)
   (let ((command
          (if (and (typep spec 'command-spec)
                   (null (command-redirections spec)))
@@ -32,17 +32,6 @@
     (run-program/ command
                   :ignore-error-status ignore-error-status
                   :output output)))
-
-;; This only works with run because run-program/ doesn't return an
-;; exit code if :output is set.
-
-;; (defmethod run-spec ((spec or-spec) &rest keys &key ignore-error-status output)
-;;   (let ((processes (sequence-processes spec))
-;;         (return-code 1))
-;;     (loop :for p :in processes :do
-;;        (setf return-code (run-spec p :ignore-error-status ignore-error-status :output output))
-;;        :until (and (numberp return-code) (= return-code 0)))
-;;     return-code))
 
 (defun run-process-spec (spec &rest keys &key ignore-error-status output host)
   (declare (ignore ignore-error-status output))
@@ -54,6 +43,9 @@
        (cons
         (apply 'run-process-spec (parse-process-spec spec) keys))
        (process-spec
+        #+(and sbcl sb-thread unix)
+        (sbcl-run spec t output t)
+        #-(and sbcl sb-thread unix)
         (run-spec spec :ignore-error-status ignore-error-status :output output))))
     (string
      (apply 'run-process-spec (on-host-spec host spec) :host nil keys))
