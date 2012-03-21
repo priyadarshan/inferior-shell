@@ -106,17 +106,6 @@
                                :input input :output r-output :error error
                                :predicate predicate :rest rest :resume resume))))))
 
- 
-;; (defun run-collecting (spec input output error collecting)
-;;   (let ((collected))
-;;     (multiple-value-bind (process slurp)
-;;         (sbcl-run-spec spec input output error)
-;;       (when (symbolp output)
-;;         (if (eq output :lines)
-;;             (setf collected (concatenate 'list collecting slurp))
-;;             (setf collected (concatenate 'string collecting slurp))))
-;;       (values process collected))))
-
 (defmethod sbcl-run-spec ((spec or-spec) input output error predicate rest resume)
   (list (make-instance 'result :predicate #'result-or :input input :output output
                        :error error :rest (sequence-processes spec) :resume resume)))
@@ -130,9 +119,8 @@
                        :error error :rest (sequence-processes spec) :resume resume)))
 
 (defmethod sbcl-run-spec ((spec fork-spec) input output error predicate rest resume)
-  (let ((processes (sequence-processes spec)))
-    (loop :for p :in processes :do
-       (sb-thread:make-thread #'sbcl-run-spec :arguments (list p input output error))))
+  (loop :for p :in (sequence-processes spec) :do
+     (sbcl-run-spec p input output error nil nil nil))
   nil)
 
 (defun make-pipe ()
