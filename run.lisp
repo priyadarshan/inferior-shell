@@ -52,7 +52,7 @@
     (function
      (apply 'run-process-spec (funcall host spec) :host nil keys))))
 
-(defun run (cmd &key on-error time output show host)
+(defun run (cmd &key on-error time (output t) show host)
   (labels ((process-time ()
              (if time (time (process-command)) (process-command)))
            (process-command ()
