@@ -11,5 +11,6 @@
    #:print-process-spec #:parse-process-spec
    #:command-arguments #:command-redirections
    #:redirection #:file-redirection #:fd-redirection #:close-redirection
-           #:! #:- #:< #:> #:<> #:>! #:>> #:>>! #:<& #:>& #:>&! #:>>&!
-           #:>& #:>> #:>>& #:pipe #:or #:and #:progn #:fork))
+   #:! #:- #:< #:> #:<> #:>! #:>> #:>>! #:<& #:>& #:>&! #:>>&!
+   #:>& #:>> #:>>& #:pipe #:or #:and #:progn #:fork
+   #:*force-shell*))

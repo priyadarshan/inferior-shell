@@ -13,8 +13,20 @@
             :in root-suite
             :documentation "Testing inferior-shell"))
 
+(defmacro w-sh (&body body)
+  `(let ((*force-shell* t))
+     ,@body))
+
+(defmacro wo-sh (&body body)
+  `(let ((*force-shell* t))
+     ,@body))
+
 (deftest test-inferior-shell ()
-  (is (equal (run/ss "echo 1 2 3") "1 2 3"))
-  (is (equal (run/ss `(pipe (echo (+ hel "lo,") world)
-                            (tr "hw" "HW") (sed -e "s/$/!/")))
+  (is (equal (w-sh (run/ss "echo 1 2 3")) "1 2 3"))
+  (is (equal (wo-sh (run/ss "echo 1 2 3")) "1 2 3"))
+  (is (equal (w-sh (run/ss `(pipe (echo (+ hel "lo,") world)
+                                  (tr "hw" "HW") (sed -e "s/$/!/"))))
+             "Hello, World!"))
+  (is (equal (wo-sh (run/ss `(pipe (echo (+ hel "lo,") world)
+                                   (tr "hw" "HW") (sed -e "s/$/!/"))))
              "Hello, World!")))

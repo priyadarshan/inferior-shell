@@ -2,6 +2,8 @@
 
 (in-package :inferior-shell)
 
+(defvar *force-shell* nil)
+
 (defun run-program/interactively (command &key ignore-error-status)
   ;; force-shell wait
   (let ((return-code
@@ -29,9 +31,11 @@
                   (null (command-redirections spec)))
              (command-arguments spec)
              (print-process-spec spec))))
-    (run-program/ command
-                  :ignore-error-status ignore-error-status
-                  :output output)))
+    (if (eq output 't)
+        (run-program/ command :ignore-error-status ignore-error-status)
+        (run-program/ command
+                      :ignore-error-status ignore-error-status
+                      :output output))))
 
 (defun run-process-spec (spec &rest keys &key ignore-error-status output host)
   (declare (ignore ignore-error-status output))
@@ -44,7 +48,9 @@
         (apply 'run-process-spec (parse-process-spec spec) keys))
        (process-spec
         #+(and sbcl sb-thread unix)
-        (sbcl-run spec t output t)
+        (if (not *force-shell*)
+            (sbcl-run spec t output t)
+            (run-spec spec :ignore-error-status ignore-error-status :output output))
         #-(and sbcl sb-thread unix)
         (run-spec spec :ignore-error-status ignore-error-status :output output))))
     (string

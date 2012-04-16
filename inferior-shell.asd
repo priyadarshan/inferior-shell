@@ -12,8 +12,9 @@
    (:file "macros" :depends-on ("pkgdcl"))
    (:file "host" :depends-on ("pkgdcl"))
    (:file "run" :depends-on ("process-spec" "macros"))
+   (:file "run-generic" :depends-on ("process-spec" "macros"))
    #+ (and sbcl sb-thread unix)
-   (:file "run-sbcl" :depends-on ("process-spec" "macros"))))
+   (:file "run-sbcl" :depends-on ("process-spec" "macros" "run-generic"))))
 
 (defmethod perform ((op test-op) (system (eql (find-system :inferior-shell))))
   (asdf:load-system :inferior-shell-test)
