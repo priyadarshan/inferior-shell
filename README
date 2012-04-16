@@ -1,7 +1,7 @@
 INFERIOR-SHELL
 
 This CL library allows you to spawn local or remote processes and shell pipes.
-I lets me use CL in many cases where I would previously write shell scripts.
+It lets me use CL in many cases where I would previously write shell scripts.
 The name is a pun, in that this library can both
 let you spawn inferior (children processes) shells, and
 serve itself as an inferior (not so featureful) shell.
@@ -102,6 +102,9 @@ RUN/LINES CMD &KEY ON-ERROR TIME SHOW HOST
   returning as a list of one string per line (stripped of line-ending)
   what the inferior command sent to its standard output.
 
+*FORCE-SHELL*
+  a variable to force using a shell, even in cases where INFERIOR-SHELL can run
+  commands directly.
 
 ==== THE PROCESS-SPEC MINI-LANGUAGE ====
 
@@ -114,10 +117,22 @@ and on the complexity of the pipeline.
 SEXP mini-language
 
 ;; A process is a pipe or a command
-process := pipe | command
+process := pipe | or | and | progn | fork | command
 
 ;; A pipe is a list of processes, each of whose output is connected to the next one's input.
 pipe := ( pipe process* )
+
+;; OR is a list of processes which will be executed in sequence until one returns exit code 0.
+or := ( or processes )
+
+;; AND is a list of processes which will be executed in sequence until one does not return exit code 0.
+and := ( and processes )
+
+;; PROGN is a list of processes which will be executed sequentially.
+progn := ( progn processes )
+
+;; FORK is a list of processes which will be forked and executed in parallel.
+fork := ( fork processes )
 
 ;; A command is a list of tokens and redirections.
 ;; Tokens specify the argv, redirections specify modifications of the inherited file descriptors.
@@ -152,9 +167,6 @@ and a cons is a specification in the minilanguage to be parsed with parse-proces
 ==== TO DO ====
 
 Document it.
-
-Extend the language to handle sequences of commands { a ; b ; c },
-backgrounded commands a & and generally more of the shell language.
 
 Have a complementary inferior-shell-watcher library that uses iolib to spawn
 pipes locally, and watch the subprocesses as part of the iolib event loop.
