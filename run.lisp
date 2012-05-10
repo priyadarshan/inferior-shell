@@ -43,7 +43,9 @@
     (null
      (etypecase spec
        (string
-        (apply 'run-program/ spec keys))
+        (if (eq output 't)
+            (run-program/ spec :ignore-error-status ignore-error-status)
+            (apply 'run-program/ spec keys)))
        (cons
         (apply 'run-process-spec (parse-process-spec spec) keys))
        (process-spec
