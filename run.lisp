@@ -70,7 +70,7 @@
                :ignore-error-status t :output output :host host)
               (error-behaviour on-error))))
     (when show
-      (format *trace-output* "; ~S~%" cmd))
+      (format *trace-output* "; ~A~%" (print-process-spec cmd)))
     (process-time)))
 
 (defun run/s (cmd &rest keys &key on-error time show host)
