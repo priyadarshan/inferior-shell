@@ -59,7 +59,7 @@
    ;; predicate to determine whether to run the rest of the sequence
    ;; called with the process object, and expected to return t or nil
    (predicate
-    :type (or function nil) :initform nil
+    :type (or function null) :initform nil
     :initarg :predicate :accessor result-predicate)
    (rest
     :type list :initform nil

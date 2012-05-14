@@ -37,7 +37,7 @@
                                :predicate predicate :rest rest :resume resume))))))
 
 (defun make-pipe ()
-  (multiple-value-bind (fd1 fd2) 
+  (multiple-value-bind (fd1 fd2)
       (sb-unix:unix-pipe)
     (values (sb-sys:make-fd-stream fd1 :buffering :none)
             (sb-sys:make-fd-stream fd2 :buffering :none))))
@@ -76,18 +76,18 @@
           (alexandria:flatten (list next (process-result-list next)))))))
 
 (defun sbcl-run (spec input output error)
-  (labels ((collect-threads (r)          
+  (labels ((collect-threads (r)
              (let ((thread (result-thread r)))
                (when thread
                  (sb-thread:join-thread thread)))))
     (let* ((first-results (generic-run-spec spec input output error nil nil nil))
            (full-results (alexandria:flatten (nconc first-results
-                                                   (loop :for r :in first-results
-                                                      :nconc (process-result-list r))))))
+                                                    (loop :for r :in first-results
+                                                          :nconc (process-result-list r))))))
       (when (keywordp output)
         (let ((collected (mapcar #'collect-threads full-results)))
           (case output
             (:string (apply #'concatenate 'string collected))
             (:string/stripped (apply #'concatenate 'string collected))
             (:lines (apply #'concatenate 'list collected))
-            (otherwise collected )))))))
+            (otherwise collected)))))))
