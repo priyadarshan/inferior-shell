@@ -13,4 +13,4 @@
    #:redirection #:file-redirection #:fd-redirection #:close-redirection
    #:! #:- #:< #:> #:<> #:>! #:>> #:>>! #:<& #:>& #:>&! #:>>&!
    #:>& #:>> #:>>& #:pipe #:or #:and #:progn #:fork
-   #:*force-shell*))
+   #:*backend*))

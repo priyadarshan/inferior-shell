@@ -102,9 +102,13 @@ RUN/LINES CMD &KEY ON-ERROR TIME SHOW HOST
   returning as a list of one string per line (stripped of line-ending)
   what the inferior command sent to its standard output.
 
-*FORCE-SHELL*
-  a variable to force using a shell, even in cases where INFERIOR-SHELL can run
-  commands directly.
+*BACKEND*
+  a variable to choose between backends. Currently, only supported are
+  :AUTO (the default, using xcvb-driver:run-program/, and
+  spawning a shell unless it's a simple process), and
+  :SBCL (only available on #+(and sbcl sb-thread unix),
+  doesn't need a shell but has some limitations such as
+  only supporting redirection of stdin, stdout, stderr).
 
 ==== THE PROCESS-SPEC MINI-LANGUAGE ====
 

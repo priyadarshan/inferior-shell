@@ -2,12 +2,11 @@
 
 (in-package :inferior-shell)
 
-(defvar *force-shell* nil)
+(defvar *backend* :auto)
 
 ;;; TODO: instead support a magic :interactive directly in driver.lisp's run-program/
 ;;; and/or add support for arbitrary input to said run-program/
 (defun run-program/interactively (command &key ignore-error-status)
-  ;; force-shell wait
   #-(or clozure sbcl) (NIY 'run-program/interactively command ignore-error-status)
   #+(or clozure sbcl)
   (let* ((process
@@ -41,7 +40,7 @@
                       :ignore-error-status ignore-error-status
                       :output output))))
 
-(defun run-process-spec (spec &rest keys &key ignore-error-status output host)
+(defun run-process-spec (spec &rest keys &key ignore-error-status output host backend)
   (etypecase host
     (null
      (etypecase spec
@@ -52,12 +51,14 @@
        (cons
         (apply 'run-process-spec (parse-process-spec spec) keys))
        (process-spec
-        #+(and sbcl sb-thread unix)
-        (if (not *force-shell*)
-            (sbcl-run spec t output t)
-            (run-spec spec :ignore-error-status ignore-error-status :output output))
-        #-(and sbcl sb-thread unix)
-        (run-spec spec :ignore-error-status ignore-error-status :output output))))
+        (ecase (or backend *backend*)
+          #+(and sbcl sb-thread unix)
+          ((:sbcl)
+           (sbcl-run
+            spec :input (eq :output :interactively) :output output :error t
+            :ignore-error-status ignore-error-status))
+          ((:auto)
+           (run-spec spec :ignore-error-status ignore-error-status :output output))))))
     (string
      (apply 'run-process-spec (on-host-spec host spec) :host nil keys))
     (function

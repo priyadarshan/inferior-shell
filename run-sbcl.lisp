@@ -75,7 +75,8 @@
         (when next
           (alexandria:flatten (list next (process-result-list next)))))))
 
-(defun sbcl-run (spec input output error)
+(defun sbcl-run (spec &key input output error ignore-error-status)
+  (declare (ignore ignore-error-status)) ;; THIS IS A BUG!
   (labels ((collect-threads (r)
              (let ((thread (result-thread r)))
                (when thread
