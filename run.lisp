@@ -4,16 +4,20 @@
 
 (defvar *force-shell* nil)
 
+;;; TODO: instead support a magic :interactive directly in driver.lisp's run-program/
+;;; and/or add support for arbitrary input to said run-program/
 (defun run-program/interactively (command &key ignore-error-status)
   ;; force-shell wait
-  (let ((return-code
-         #+sbcl
-          (sb-ext:process-exit-code
-           (sb-ext:process-wait
-            (sb-ext:run-program
-             (car command) (cdr command)
-             :search t :input t :output t :error t :wait t)))
-          #-sbcl (NIY 'rp/fse)))
+  #-(or clozure sbcl) (NIY 'run-program/interactively command ignore-error-status)
+  #+(or clozure sbcl)
+  (let* ((process
+          (#+clozure ccl:run-program #+sbcl sb-ext:run-program
+           (car command) (cdr command)
+           :input t :output t :error t :wait t
+           #+sbcl :search #+sbcl t))
+         (return-code
+          #+clozure (nth-value 1 (ccl:external-process-status process))
+          #+sbcl (sb-ext:process-exit-code process)))
     (unless (or ignore-error-status (zerop return-code))
       (cerror "ignore error code~*~*"
               "Process ~S exited with error code ~D"
@@ -25,25 +29,24 @@
       spec
       `(ssh ,host ,(print-process-spec spec))))
 
-(defun run-spec (spec &rest keys &key ignore-error-status output)
+(defun run-spec (spec &key ignore-error-status output)
   (let ((command
          (if (and (typep spec 'command-spec)
                   (null (command-redirections spec)))
              (command-arguments spec)
              (print-process-spec spec))))
-    (if (eq output 't)
+    (if (eq output t)
         (run-program/ command :ignore-error-status ignore-error-status)
         (run-program/ command
                       :ignore-error-status ignore-error-status
                       :output output))))
 
 (defun run-process-spec (spec &rest keys &key ignore-error-status output host)
-  (declare (ignore ignore-error-status output))
   (etypecase host
     (null
      (etypecase spec
        (string
-        (if (eq output 't)
+        (if (eq output t)
             (run-program/ spec :ignore-error-status ignore-error-status)
             (apply 'run-program/ spec keys)))
        (cons
