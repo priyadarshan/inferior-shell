@@ -68,11 +68,11 @@
   (labels ((process-time ()
              (if time (time (process-command)) (process-command)))
            (process-command ()
-             (or
-              (run-process-spec
-               cmd
-               :ignore-error-status t :output output :host host)
-              (error-behaviour on-error))))
+             (handler-case
+                 (run-process-spec
+                  cmd
+                  :ignore-error-status nil :output output :host host)
+               (t () (error-behaviour on-error)))))
     (when show
       (format *trace-output* "; ~A~%" (print-process-spec cmd)))
     (process-time)))
