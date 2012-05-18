@@ -5,7 +5,7 @@
 (defvar *backend* :auto)
 
 ;;; TODO: instead support a magic :interactive directly in driver.lisp's run-program/
-;;; and/or add support for arbitrary input to said run-program/
+;;; and/or add support for arbitrary input (and error output?) to said run-program/
 (defun run-program/interactively (command &key ignore-error-status)
   #-(or clozure sbcl) (NIY 'run-program/interactively command ignore-error-status)
   #+(or clozure sbcl)
@@ -72,7 +72,7 @@
                  (run-process-spec
                   cmd
                   :ignore-error-status nil :output output :host host)
-               (t () (error-behaviour on-error)))))
+               (subprocess-error () (error-behaviour on-error)))))
     (when show
       (format *trace-output* "; ~A~%" (print-process-spec cmd)))
     (process-time)))
