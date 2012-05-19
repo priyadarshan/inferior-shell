@@ -37,6 +37,10 @@
     :type (or string pathname)
     :initarg :pathname :reader redirection-pathname)))
 
+(defun check-small-fd (fd)
+  (unless (typep fd '(integer 0 9))
+    (error "Can only do redirections with fd between 0 and 9")))
+
 (defclass fd-redirection (redirection)
   ;; when you'd tell a shell $new >& $old,
   ;; you mean the C code dup2(old,new)
@@ -74,25 +78,29 @@
       (when (eq symbol '!)
         (error "Can't print ad-hoc redirection ~S" r))
       (unless (= fd (case symbol ((< <>) 0) (otherwise 1)))
-        (format s "~D " fd))
+        (check-small-fd fd)
+        (format s "~D" fd))
       (format s "~A " symbol)
       (xcvb-driver:escape-command (list pathname) s))))
 
 (defmethod print-process-spec ((r fd-redirection) &optional s)
   (with-output-stream (s)
     (with-slots (new-fd old-fd) r
+      (check-small-fd old-fd)
+      (check-small-fd new-fd)
       (case new-fd
         (0 (format s "<& ~D" old-fd))
         (1 (format s ">& ~D" old-fd))
-        (otherwise (format s "~D >& ~D" new-fd old-fd))))))
+        (otherwise (format s "~D>& ~D" new-fd old-fd))))))
 
 (defmethod print-process-spec ((r close-redirection) &optional s)
   (with-output-stream (s)
     (with-slots (old-fd) r
+      (check-small-fd old-fd)
       (case old-fd
         (0 (princ "<& -" s))
         (1 (princ ">& -" s))
-        (otherwise (format s "~D >& -" old-fd))))))
+        (otherwise (format s "~D>& -" old-fd))))))
 
 (defclass command-spec (process-spec)
   ((arguments

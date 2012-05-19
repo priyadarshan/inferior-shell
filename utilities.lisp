@@ -4,21 +4,6 @@
 
 ;;--- TODO: move these to FARE-UTILS and/or XCVB-DRIVER ?
 
-(defun current-directory ()
-  #+sbcl (sb-posix:getcwd)
-  #-sbcl (NIY 'current-directory))
-
-(defun change-current-directory (dir)
-  #+sbcl (sb-posix:chdir dir)
-  #-sbcl (NIY 'change-current-directory))
-
-(defun call-with-directory (dir thunk)
-  (let ((saved-directory (current-directory)))
-    (change-current-directory dir)
-    (unwind-protect
-         (funcall thunk)
-      (change-current-directory saved-directory))))
-
 (defun make-directory (dir &optional (mode #o755))
   #+sbcl (sb-posix:mkdir dir mode)
   #-sbcl (NIY 'make-directory))
@@ -26,11 +11,6 @@
 (defun setenv (var val &optional (overwritep t))
   #+sbcl (sb-posix:setenv var val (if overwritep 1 0))
   #-sbcl (NIY 'setenv))
-
-(defun first-and-only (x)
-  (check-type x cons)
-  (assert (null (cdr x)))
-  (car x))
 
 (defmacro pipe (values &rest transformers)
   (if (null transformers)
@@ -86,3 +66,9 @@
 (defun next-day (year month date)
   (add-days year month date 1))
 
+(defun zglobcmd (&rest patterns)
+  `(zsh -fc ("print -l " ,(join-strings patterns :separator " "))))
+
+(defun zglob (pattern &key host patterns)
+  (run/lines `((> 2 "/dev/null") ,@(apply 'zglobcmd pattern patterns))
+             :host host))
