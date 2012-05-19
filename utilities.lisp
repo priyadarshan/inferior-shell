@@ -67,8 +67,8 @@
   (add-days year month date 1))
 
 (defun zglobcmd (&rest patterns)
-  `(zsh -fc ("print -l " ,(join-strings patterns :separator " "))))
+  `(zsh --nullglob -fc ("print -l " ,(join-strings patterns :separator " "))))
 
-(defun zglob (pattern &key host patterns)
-  (run/lines `((> 2 "/dev/null") ,@(apply 'zglobcmd pattern patterns))
+(defun zglob (patterns &key host)
+  (run/lines `((> 2 "/dev/null") ,@(apply 'zglobcmd (alexandria:ensure-list patterns)))
              :host host))
