@@ -6,6 +6,7 @@
   (:use :cl :fare-utils :fare-matcher :xcvb-driver :named-readtables :fare-mop)
   (:export
    #:run #:run/s #:run/ss #:run/lines
+   #:simple-command-line-token #:token-string
    #:process-spec #:command-spec #:pipe-spec
    #:or-spec #:and-spec #:progn-spec #:fork-spec
    #:print-process-spec #:parse-process-spec

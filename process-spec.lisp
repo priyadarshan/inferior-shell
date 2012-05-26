@@ -201,6 +201,19 @@
       (*
        (error "Invalid process spec ~S" spec)))))
 
+(deftype simple-command-line-token () '(or string pathname keyword symbol character))
+
+(defun token-string (x)
+  (with-safe-io-syntax ()
+    (typecase x
+      (character (format nil "-~A" x))
+      (keyword (format nil "--~(~A~)" x))
+      (symbol (string-downcase x))
+      (string x)
+      (pathname (native-namestring (translate-logical-pathname x)))
+      (list (write-to-string x))
+      (t (princ-to-string x)))))
+
 (defun parse-command-spec-top-token (c x)
   (labels
       ((r (x)
@@ -266,31 +279,23 @@
            (*
             (flush-argument c)
             (parse-command-spec-token c x)
-            (flush-argument c))))
-       (a (x)
-         (add-argument c x)))
+            (flush-argument c)))))
     (etypecase x
-      (string (a x))
-      (character (a (format nil "-~a" x)))
       (null ())
-      (keyword (a (format nil "--~(~a~)" x)))
-      (symbol (a (string-downcase x)))
-      (pathname (a (namestring (translate-logical-pathname x))))
-      (cons (c x)))))
+      (cons (c x))
+      (simple-command-line-token
+       (add-argument c (token-string x))))))
 
 (defun parse-command-spec-token (c x)
   (labels
       ((e (x) (extend-argument c x))
        (p (x)
          (etypecase x
-           (string (e x))
-           (character (e (format nil "-~a" x)))
-           ((eql -) (e " "))
            (null ())
-           (keyword (e (format nil "--~(~a~)" x)))
-           (symbol (e (string-downcase x)))
-           (pathname (e (namestring (translate-logical-pathname x))))
-           (cons (c x))))
+	   (cons (c x))
+           ((eql -) (e " "))
+	   (simple-command-line-token
+	    (e (token-string x)))))
        (c (x)
          (match x
            (`(,(of-type string) ,@*) ;; recurse
