@@ -2,6 +2,10 @@
 
 (in-package :inferior-shell)
 
+(defgeneric process-redirection (redirection input output error))
+(defgeneric generic-run-spec (spec input output error predicate rest resume))
+(defgeneric process-result (result))
+
 ;; list of streams to close when finished
 (defvar *streams-to-close* nil)
 
