@@ -201,7 +201,7 @@
       (*
        (error "Invalid process spec ~S" spec)))))
 
-(deftype simple-command-line-token () '(or string pathname keyword symbol character))
+(deftype simple-command-line-token () '(or string pathname keyword symbol character integer))
 
 (defun token-string (x)
   (with-safe-io-syntax ()
@@ -298,8 +298,6 @@
 	    (e (token-string x)))))
        (c (x)
          (match x
-           (`(,(of-type string) ,@*) ;; recurse
-             (map () #'p x))
            (`(+ ,@args) ;; recurse (explicit call)
              (map () #'p args))
            (`(* ,@args) ;; splice
@@ -308,6 +306,8 @@
            (`(quote ,@args) ;; quote
              (e (xcvb-driver:escape-command
                  (parse-command-spec-tokens args))))
+           (`(,(of-type simple-command-line-token) ,@*) ;; recurse
+             (map () #'p x))
            (*
             (error "Unrecognized command-spec token ~S" x)))))
     (p x)))

@@ -2,11 +2,6 @@
 
 (in-package :inferior-shell)
 
-(defmethod print-object ((result result) stream)
-  (print-unreadable-object (result stream :type t)
-    (with-slots (process predicate rest) result
-      (format stream "~A ~A ~A" process predicate rest))))
-
 (defmethod result-or ((r result))
   (not (zerop (sb-ext:process-exit-code (result-process r)))))
 
