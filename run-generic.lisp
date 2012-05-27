@@ -138,16 +138,16 @@
               (eval-pred predicate rest))
           (let ((next (car rest)))
             (generic-run-spec next input output error predicate (cdr rest)
-                           (if (typep next 'sequence-spec)
-                               r
-                               resume)))
+                              (if (typep next 'sequence-spec)
+                                  r
+                                  resume)))
           (when resume
             (with-slots (predicate rest resume input output error) resume
               (when (and (consp rest) (consp (cdr rest)))
                 (let ((remainder (cdr rest)))
                   (when (eval-pred predicate remainder)
                     (generic-run-spec (second rest) input output error
-                                   predicate (cddr rest) resume))))))))))
+                                      predicate (cddr rest) resume))))))))))
 
 (defun process-result-list (rl)
   (if (listp rl)

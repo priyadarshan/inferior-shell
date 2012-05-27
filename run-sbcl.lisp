@@ -40,36 +40,6 @@
 (defun process-wait (p)
   (sb-ext:process-wait p))
 
-(defmethod process-result ((r result))
-  (labels ((eval-pred (pred rest)
-             (and (consp rest)
-                  (or (null pred)
-                      (and (functionp pred) (funcall pred (result-process r)))))))
-    (with-slots (process predicate rest input output error resume) r
-      (when process
-        (sb-ext:process-wait process))
-      (if (or (not process)
-              (eval-pred predicate rest))
-          (let ((next (car rest)))
-            (generic-run-spec next input output error predicate (cdr rest)
-                              (if (typep next 'sequence-spec)
-                                  r
-                                  resume)))
-          (when resume
-            (with-slots (predicate rest resume input output error) resume
-              (when (and (consp rest) (consp (cdr rest)))
-                (let ((remainder (cdr rest)))
-                  (when (eval-pred predicate remainder)
-                    (generic-run-spec (second rest) input output error
-                                      predicate (cddr rest) resume))))))))))
-
-(defun process-result-list (rl)
-  (if (listp rl)
-      (mapcar #'process-result-list rl)
-      (let ((next (process-result rl)))
-        (when next
-          (alexandria:flatten (list next (process-result-list next)))))))
-
 (defun sbcl-run (spec &key input output error ignore-error-status)
   (declare (ignore ignore-error-status)) ;; THIS IS A BUG!
   (labels ((collect-threads (r)
