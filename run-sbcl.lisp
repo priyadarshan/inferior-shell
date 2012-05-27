@@ -48,12 +48,11 @@
                  (sb-thread:join-thread thread)))))
     (let* ((first-results (generic-run-spec spec input output error nil nil nil))
            (full-results (alexandria:flatten (nconc first-results
-                                                    (loop :for r :in first-results
-                                                          :nconc (process-result-list r))))))
+                                                    (mapcan 'process-result-list first-results)))))
       (when (keywordp output)
         (let ((collected (mapcar #'collect-threads full-results)))
           (case output
             (:string (apply #'concatenate 'string collected))
-            (:string/stripped (apply #'concatenate 'string collected))
+            (:string/stripped (strcat collected))
             (:lines (apply #'concatenate 'list collected))
             (otherwise collected)))))))
