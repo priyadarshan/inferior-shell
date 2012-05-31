@@ -2,6 +2,10 @@
 
 (in-package :inferior-shell)
 
+(defgeneric result-or (result))
+
+(defgeneric result-and (result))
+
 (defmethod result-or ((r result))
   (not (zerop (sb-ext:process-exit-code (result-process r)))))
 

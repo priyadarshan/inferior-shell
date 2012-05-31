@@ -82,29 +82,29 @@
     (with-slots (process predicate rest) result
       (format stream "~A ~A ~A" process predicate rest))))
 
-; (defgeneric result-or ((result r)))
-
-; (defgeneric result-and ((result r)))
-
-
 (defmethod generic-run-spec ((spec or-spec) input output error predicate rest resume)
+  (declare (ignorable predicate rest))
   (list (make-instance 'result :predicate #'result-or :input input :output output
                        :error error :rest (sequence-processes spec) :resume resume)))
 
 (defmethod generic-run-spec ((spec and-spec) input output error predicate rest resume)
+  (declare (ignorable predicate rest))
   (list (make-instance 'result :predicate #'result-and :input input :output output
                        :error error :rest (sequence-processes spec) :resume resume)))
 
 (defmethod generic-run-spec ((spec progn-spec) input output error predicate rest resume)
+  (declare (ignorable predicate rest))
   (list (make-instance 'result :predicate nil :input input :output output
                        :error error :rest (sequence-processes spec) :resume resume)))
 
 (defmethod generic-run-spec ((spec fork-spec) input output error predicate rest resume)
+  (declare (ignorable predicate rest resume))
   (loop :for p :in (sequence-processes spec) :do
      (generic-run-spec p input output error nil nil nil))
   nil)
 
 (defmethod generic-run-spec ((spec pipe-spec) input output error predicate rest resume)
+  (declare (ignorable predicate rest resume))
   (let ((processes (sequence-processes spec))
         (r-input)
         (r-output)
