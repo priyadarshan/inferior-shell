@@ -5,12 +5,16 @@
 ;;--- TODO: move these to FARE-UTILS and/or XCVB-DRIVER ?
 
 (defun make-directory (dir &optional (mode #o755))
+  ;; TODO: move to fare-utils or somewhere else
+  ;; TODO: it's low-level. rename this mkdir or some such, and document use of native-namestring.
+  #+clozure (ccl::%mkdir dir mode)
   #+sbcl (sb-posix:mkdir dir mode)
-  #-sbcl (NIY 'make-directory))
+  #-(or clozure sbcl) (NIY 'make-directory))
 
 (defun setenv (var val &optional (overwritep t))
+  #+clozure (ccl:setenv var val overwritep)
   #+sbcl (sb-posix:setenv var val (if overwritep 1 0))
-  #-sbcl (NIY 'setenv))
+  #-(or clozure sbcl) (NIY 'setenv))
 
 (defmacro pipe (values &rest transformers)
   (if (null transformers)
