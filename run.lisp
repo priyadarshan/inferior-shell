@@ -4,25 +4,6 @@
 
 (defvar *backend* :auto)
 
-;;; TODO: instead support a magic :interactive directly in driver.lisp's run-program/
-;;; and/or add support for arbitrary input (and error output?) to said run-program/
-(defun run-program/interactively (command &key ignore-error-status)
-  #-(or clozure sbcl) (NIY 'run-program/interactively command ignore-error-status)
-  #+(or clozure sbcl)
-  (let* ((process
-          (#+clozure ccl:run-program #+sbcl sb-ext:run-program
-           (car command) (cdr command)
-           :input t :output t :error t :wait t
-           #+sbcl :search #+sbcl t))
-         (return-code
-          #+clozure (nth-value 1 (ccl:external-process-status process))
-          #+sbcl (sb-ext:process-exit-code process)))
-    (unless (or ignore-error-status (zerop return-code))
-      (cerror "ignore error code~*~*"
-              "Process ~S exited with error code ~D"
-              command return-code))
-    (zerop return-code)))
-
 (defun on-host-spec (host spec)
   (if (current-host-name-p host)
       spec
@@ -51,9 +32,6 @@
     (case output
       ((t)
        (run-program/ command :ignore-error-status ignore-error-status))
-      ((:interactively)
-       (run-program/interactively
-        command :ignore-error-status ignore-error-status))
       (otherwise
        (run-program/
         command :ignore-error-status ignore-error-status :output output)))))
@@ -70,9 +48,10 @@
         (ecase (or backend *backend*)
           #+(and sbcl sb-thread unix)
           ((:sbcl)
-           (sbcl-run
-            spec :input (eq :output :interactively) :output output :error t
-            :ignore-error-status ignore-error-status))
+	   (let ((interactive (eq :output :interactive)))
+	     (sbcl-run
+	      spec :input interactive :output (or interactive output) :error t
+		   :ignore-error-status ignore-error-status)))
           ((:auto)
            (run-spec spec :ignore-error-status ignore-error-status :output output))))))
     (string
