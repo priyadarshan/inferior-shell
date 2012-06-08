@@ -28,26 +28,42 @@
       spec
       `(ssh ,host ,(print-process-spec spec))))
 
+(deftype direct-command-spec ()
+  '(and command-spec (satisfies direct-command-spec-p)))
+
+(defun direct-command-spec-p (spec)
+  (and (typep spec 'command-spec)
+       (null (command-redirections spec))))
+
 (defun run-spec (spec &key ignore-error-status output)
-  (let ((command
-         (if (and (typep spec 'command-spec)
-                  (null (command-redirections spec)))
-             (command-arguments spec)
-             (print-process-spec spec))))
-    (if (eq output t)
-        (run-program/ command :ignore-error-status ignore-error-status)
-        (run-program/ command
-                      :ignore-error-status ignore-error-status
-                      :output output))))
+  (let* ((command
+          (if (consp spec)
+            (parse-process-spec spec)
+            spec))
+         (command
+          (etypecase command
+            (direct-command-spec
+             (command-arguments spec))
+            (process-spec
+             (print-process-spec spec))
+            (string
+             spec))))
+    (case output
+      ((t)
+       (run-program/ command :ignore-error-status ignore-error-status))
+      ((:interactively)
+       (run-program/interactively
+        command :ignore-error-status ignore-error-status))
+      (otherwise
+       (run-program/
+        command :ignore-error-status ignore-error-status :output output)))))
 
 (defun run-process-spec (spec &rest keys &key ignore-error-status output host backend)
   (etypecase host
     (null
      (etypecase spec
        (string
-        (if (eq output t)
-            (run-program/ spec :ignore-error-status ignore-error-status)
-            (apply 'run-program/ spec keys)))
+        (run-spec spec :ignore-error-status ignore-error-status :output output))
        (cons
         (apply 'run-process-spec (parse-process-spec spec) keys))
        (process-spec
