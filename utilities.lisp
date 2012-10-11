@@ -23,7 +23,7 @@
              ,@(cdr transformers))))
 
 (defun split-lines (x)
-  (asdf:split-string x :separator #(#\newline)))
+  (split-string x :separator #(#\newline)))
 
 (defun split-lines* (x)
   (remove-if #'emptyp (split-lines x)))
