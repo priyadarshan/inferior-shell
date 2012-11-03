@@ -3,7 +3,7 @@
 (in-package :cl)
 
 (defpackage :inferior-shell
-  (:use :cl :xcvb-utils :fare-matcher :named-readtables :fare-mop)
+  (:use :cl :xcvb-utils :optima :named-readtables :fare-mop)
   (:export
    #:run #:run/s #:run/ss #:run/lines
    #:simple-command-line-token #:token-string

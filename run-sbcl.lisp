@@ -57,6 +57,6 @@
         (let ((collected (mapcar #'collect-threads full-results)))
           (case output
             (:string (apply #'concatenate 'string collected))
-            (:string/stripped (strcat collected))
+            (:string/stripped (stripln (apply #'concatenate 'string collected)))
             (:lines (apply #'concatenate 'list collected))
             (otherwise collected)))))))

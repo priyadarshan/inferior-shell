@@ -1,10 +1,9 @@
 ;;; -*- Lisp -*-
 
-#+sbcl (require :sb-posix)
-
 (defsystem :inferior-shell
   :defsystem-depends-on (:asdf-condition-control)
-  :depends-on (:asdf :xcvb-driver :fare-utils :fare-matcher :fare-quasiquote-readtable :fare-mop :alexandria)
+  :depends-on (:asdf :xcvb-utils :fare-quasiquote-extras :fare-mop :alexandria
+                     #+sbcl :sb-posix)
   :description "spawn local or remote processes and shell pipes"
   :components
   ((:file "pkgdcl")

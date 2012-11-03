@@ -1,8 +1,8 @@
 #+xcvb (module (:depends-on ("pkgdcl")))
 
 (in-package :inferior-shell)
-(in-readtable :fare-quasiquote)
 
+(in-readtable :fare-quasiquote)
 
 (defclass process-spec (simple-print-object-mixin) ())
 
@@ -193,12 +193,12 @@
         (make-sequence-instance progn-spec args))
       (`(fork ,@args)
         (make-sequence-instance fork-spec args))
-      (`(,* ,@*)
+      (`(,_ ,@_)
         (let ((c (make-instance 'command-parse)))
           (dolist (elem spec)
             (parse-command-spec-top-token c elem))
           (command-parse-results c)))
-      (*
+      (_
        (error "Invalid process spec ~S" spec)))))
 
 (deftype simple-command-line-token () '(or string pathname keyword symbol character integer))
@@ -206,20 +206,31 @@
 (defun token-string (x)
   (with-safe-io-syntax ()
     (typecase x
+      (null "")
       (character (format nil "-~A" x))
       (keyword (format nil "--~(~A~)" x))
       (symbol (string-downcase x))
       (string x)
       (pathname (native-namestring (translate-logical-pathname x)))
-      (list (write-to-string x))
+      (cons (with-output-to-string (s) (mapcar (curry 'write-token-component s) x)))
       (t (princ-to-string x)))))
+
+(defun write-token-component (s x)
+  (typecase x
+    (null nil)
+    (character (write-char x s))
+    (symbol (write-string (string-downcase x) s))
+    (string (write-string x s))
+    (pathname (write-string (native-namestring (translate-logical-pathname x)) s))
+    (cons (mapcar (curry 'write-token-component s) x))
+    (t (princ x s))))
 
 (defun parse-command-spec-top-token (c x)
   (labels
       ((r (x)
          (add-redirection c x))
        (f (sym fd pn flags)
-         (r (make-file-redirection sym fd pn flags)))
+         (r (make-file-redirection sym fd (token-string pn) flags)))
        (fd (old new)
          (r (make-fd-redirection old new)))
        (cl (old)
@@ -276,7 +287,7 @@
            (`(>>&! ,pn)
              (c `(>>! 1 ,pn))
              (c `(>& 2 1)))
-           (*
+           (_
             (flush-argument c)
             (parse-command-spec-token c x)
             (flush-argument c)))))
@@ -306,9 +317,9 @@
            (`(quote ,@args) ;; quote
              (e (xcvb-driver:escape-command
                  (parse-command-spec-tokens args))))
-           (`(,(of-type simple-command-line-token) ,@*) ;; recurse
+           (`(,(typep simple-command-line-token) _) ;; recurse
              (map () #'p x))
-           (*
+           (_
             (error "Unrecognized command-spec token ~S" x)))))
     (p x)))
 
