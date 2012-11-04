@@ -14,7 +14,8 @@
             :documentation "Testing inferior-shell"))
 
 (defun do-test-inferior-shell ()
-  (is (equal (run/ss "echo 1 2 3") "1 2 3"))
+  (is (equal (run/ss '(echo (1) "2" (+ 3))) "1 2 3"))
+  (is (equal (run/ss "echo 1    2        3") "1 2 3"))
   (is (equal (run/ss `(pipe (echo (+ hel "lo,") world)
                             (tr "hw" "HW") (sed -e "s/$/!/")))
              "Hello, World!")))

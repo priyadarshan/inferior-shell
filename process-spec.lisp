@@ -317,7 +317,7 @@
            (`(quote ,@args) ;; quote
              (e (xcvb-driver:escape-command
                  (parse-command-spec-tokens args))))
-           (`(,(typep simple-command-line-token) _) ;; recurse
+           (`(,(typep simple-command-line-token) ,@_) ;; recurse
              (map () #'p x))
            (_
             (error "Unrecognized command-spec token ~S" x)))))
