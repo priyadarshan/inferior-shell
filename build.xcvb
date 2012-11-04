@@ -9,10 +9,9 @@
 XCVB provides a scalable system to build large software in Lisp, featuring
 deterministic separate compilation and enforced locally-declared dependencies."
   :build-depends-on
-  ("/asdf" "/xcvb/driver"
-   "/alexandria"
-   "/fare-utils" "/fare-mop"
-   "/fare-matcher" ;; includes "/fare-quasiquote-readtable" 
+  ("/xcvb/xcvb-utils"
+   "/fare-mop"
+   "/fare-quasiquote" ;; includes fare-quasiquote-readtable, fare-quasiquote-optima
    "/cl-ppcre" "/lambda-reader")
   :depends-on
   ("pkgdcl" "process-spec" "utilities" "macros" "host" "run")
