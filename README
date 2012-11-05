@@ -39,22 +39,25 @@ By default, inferior-shell uses xcvb-driver:run-program/
 as its universal execution backend, and has its limitations,
 which are as follows.
 
-Platforms supported inferior-shell at this time include:
-ABCL, Allegro, CLISP, ClozureCL, CMUCL, ECL, LispWorks, RMCL, SBCL, SCL, XCL.
-Platforms NOT supported (yet) include:
-CormanLisp (untested), GCL (untested), Genera (unimplemented), MKCL (untested).
-On supported platforms, inferior-shell works on both Unix and Windows.
-
-One current limitation is lack of support for arbitrary input redirection.
-The only possible input redirection is from /dev/null
-or by inheriting the parent's standard input
-when running in :interactive mode.
-
-Last but not least, inferior-shell only supports
+First, inferior-shell at this point only supports
 synchronous execution of sub-processes.
 For asynchronous execution, please use IOlib or executor.
 IOlib requires C compilation and linking, and may or may not support Windows.
 executor only supports select implementations.
+A future extension to inferior-shell may use IOlib as a backend.
+
+Second, there is currently limited support for input redirection.
+The only possible input redirection is from /dev/null
+or by inheriting the parent's standard input
+when running in :interactive mode.
+However, using shell redirection, you can also redirect input from a file,
+or from a numbered file descriptor (except 0, 1, 2).
+
+Finally, supported platforms at this time include:
+ABCL, Allegro, CLISP, ClozureCL, CMUCL, ECL, LispWorks, RMCL, SBCL, SCL, XCL.
+Platforms NOT (yet) supported include:
+CormanLisp (untested), GCL (untested), Genera (unimplemented), MKCL (untested).
+On supported platforms, inferior-shell works on both Unix and Windows.
 
 
 ==== Exported Functionality ====
@@ -92,7 +95,7 @@ RUN CMD &KEY ON-ERROR TIME SHOW HOST OUTPUT
   a PROCESS-SPEC object already parsed,
   or a string to be passed to a Unix shell.
   ON-ERROR specifies behavior in case the command doesn't successfully exit
-  with exit code 0, as per FARE-UTILS's ERROR-BEHAVIOUR provided with
+  with exit code 0, as per FARE-UTILS's ERROR-BEHAVIOR provided with
   (if a function, invoke it, if a string, issue an error with it,
   otherwise return it as is).
   TIME is a boolean which if true causes the execution to be timed as per TIME.
@@ -106,7 +109,8 @@ RUN CMD &KEY ON-ERROR TIME SHOW HOST OUTPUT
   NIL (default) for inheriting the parent process's stdout,
   :LINES for returning one result per line,
   :STRING for returning the output as one big string,
-  :STRING/STRIPPED is like :STRING but strips any line-ending at the end of the results,
+  :STRING/STRIPPED is like :STRING
+  but strips any line-ending at the end of the results,
   just like a shell's `cmd` or $(cmd) would do,
   more options are accepted and you can define your own, as per
   xcvb-driver's slurp-input-stream protocol.

@@ -67,7 +67,7 @@
                  (run-process-spec
                   cmd
                   :ignore-error-status nil :output output :host host)
-               (subprocess-error () (error-behaviour on-error)))))
+               (subprocess-error () (error-behavior on-error)))))
     (when show
       (format *trace-output* "; ~A~%" (print-process-spec cmd)))
     (process-time)))
