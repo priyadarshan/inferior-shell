@@ -32,6 +32,31 @@ Example use of inferior-shell, from the rpm system:
                              ")-[^-]+(-[^-]+)?$")))))
    :host host))
 
+
+==== Limitations ====
+
+By default, inferior-shell uses xcvb-driver:run-program/
+as its universal execution backend, and has its limitations,
+which are as follows.
+
+Platforms supported inferior-shell at this time include:
+ABCL, Allegro, CLISP, ClozureCL, CMUCL, ECL, LispWorks, RMCL, SBCL, SCL, XCL.
+Platforms NOT supported (yet) include:
+CormanLisp (untested), GCL (untested), Genera (unimplemented), MKCL (untested).
+On supported platforms, inferior-shell works on both Unix and Windows.
+
+One current limitation is lack of support for arbitrary input redirection.
+The only possible input redirection is from /dev/null
+or by inheriting the parent's standard input
+when running in :interactive mode.
+
+Last but not least, inferior-shell only supports
+synchronous execution of sub-processes.
+For asynchronous execution, please use IOlib or executor.
+IOlib requires C compilation and linking, and may or may not support Windows.
+executor only supports select implementations.
+
+
 ==== Exported Functionality ====
 
 The inferior-shell library creates a package INFERIOR-SHELL,
@@ -110,13 +135,16 @@ RUN/LINES CMD &KEY ON-ERROR TIME SHOW HOST
   doesn't need a shell but has some limitations such as
   only supporting redirection of stdin, stdout, stderr).
 
+
 ==== THE PROCESS-SPEC MINI-LANGUAGE ====
 
-This library offers a SEXP syntax to specify processes and pipelines of processes
-in the manner of Unix shells, including support for file descriptor redirection.
-Process specifications can be printed to be executed by a local or remote shell,
-or directly executed by your Lisp implementation, depending on its capabilities
-and on the complexity of the pipeline.
+This library offers a SEXP syntax to specify processes
+and pipelines of processes in the manner of Unix shells,
+including support for file descriptor redirection.
+Process specifications can be printed,
+to be executed by a local or remote shell,
+or directly executed by your Lisp implementation,
+depending on its capabilities and on the complexity of the pipeline.
 
 SEXP mini-language
 
