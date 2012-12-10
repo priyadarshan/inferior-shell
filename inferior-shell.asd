@@ -2,8 +2,8 @@
 
 (defsystem :inferior-shell
   :defsystem-depends-on (:asdf-condition-control)
-  :depends-on (:asdf :xcvb-utils :fare-quasiquote-extras :fare-mop :alexandria
-                     #+sbcl :sb-posix)
+  :depends-on (:asdf :xcvb-utils :fare-quasiquote-extras :fare-mop
+               #+sbcl :sb-posix)
   :description "spawn local or remote processes and shell pipes"
   :components
   ((:file "pkgdcl")
