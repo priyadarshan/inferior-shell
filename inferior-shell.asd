@@ -1,7 +1,7 @@
 ;;; -*- Lisp -*-
 
 (defsystem :inferior-shell
-  :defsystem-depends-on (:asdf-condition-control)
+  :defsystem-depends-on (:asdf)
   :depends-on (:asdf :xcvb-utils :fare-quasiquote-extras :fare-mop
                #+sbcl :sb-posix)
   :description "spawn local or remote processes and shell pipes"

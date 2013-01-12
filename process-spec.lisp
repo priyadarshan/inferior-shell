@@ -81,7 +81,7 @@
         (check-small-fd fd)
         (format s "~D" fd))
       (format s "~A " symbol)
-      (xcvb-driver:escape-command (list pathname) s))))
+      (escape-command (list pathname) s))))
 
 (defmethod print-process-spec ((r fd-redirection) &optional s)
   (with-output-stream (s)
@@ -315,7 +315,7 @@
              (loop :for (arg . rest) :on args :do
                (p arg) (when rest (flush-argument c))))
            (`(quote ,@args) ;; quote
-             (e (xcvb-driver:escape-command
+             (e (escape-command
                  (parse-command-spec-tokens args))))
            (`(,(type simple-command-line-token) ,@_) ;; recurse
              (map () #'p x))
@@ -331,7 +331,7 @@
 (defmethod print-process-spec ((spec command-spec) &optional s)
   (with-slots (arguments redirections) spec
     (with-output-stream (s)
-      (xcvb-driver:escape-command arguments s)
+      (escape-command arguments s)
       (when redirections
         (loop :for r :in redirections :do
           (princ " " s) (print-process-spec r s))))))
@@ -364,7 +364,7 @@
   (print-process-sequence-joined spec "; " "true" s " &"))
 
 (defmethod print-process-spec ((spec string) &optional s)
-  (xcvb-driver::output-string spec s))
+  (output-string spec s))
 
 (defmethod print-process-spec ((spec cons) &optional s)
   (print-process-spec (parse-process-spec spec) s))
