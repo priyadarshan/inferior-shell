@@ -73,7 +73,7 @@
   (:documentation "Print a process specification in a way suitable for consumption by a shell"))
 
 (defmethod print-process-spec ((r file-redirection) &optional s)
-  (with-output-stream (s)
+  (with-output (s)
     (with-slots (fd symbol pathname) r
       (when (eq symbol '!)
         (error "Can't print ad-hoc redirection ~S" r))
@@ -84,7 +84,7 @@
       (escape-command (list pathname) s))))
 
 (defmethod print-process-spec ((r fd-redirection) &optional s)
-  (with-output-stream (s)
+  (with-output (s)
     (with-slots (new-fd old-fd) r
       (check-small-fd old-fd)
       (check-small-fd new-fd)
@@ -94,7 +94,7 @@
         (otherwise (format s "~D>& ~D" new-fd old-fd))))))
 
 (defmethod print-process-spec ((r close-redirection) &optional s)
-  (with-output-stream (s)
+  (with-output (s)
     (with-slots (old-fd) r
       (check-small-fd old-fd)
       (case old-fd
@@ -330,14 +330,14 @@
 
 (defmethod print-process-spec ((spec command-spec) &optional s)
   (with-slots (arguments redirections) spec
-    (with-output-stream (s)
+    (with-output (s)
       (escape-command arguments s)
       (when redirections
         (loop :for r :in redirections :do
           (princ " " s) (print-process-spec r s))))))
 
 (defun print-process-sequence-joined (spec separator empty s &optional tail)
-  (with-output-stream (s)
+  (with-output (s)
     (let ((processes (sequence-processes spec)))
       (if processes
           (progn

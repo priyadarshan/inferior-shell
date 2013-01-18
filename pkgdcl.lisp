@@ -2,8 +2,9 @@
 
 (in-package :cl)
 
-(defpackage :inferior-shell
-  (:use :cl :xcvb-utils :optima :named-readtables :fare-mop)
+(asdf/package:define-package :inferior-shell
+  (:mix :fare-utils :alexandria :asdf/driver)
+  (:use :cl :optima :named-readtables :fare-mop)
   (:export
    #:run #:run/s #:run/ss #:run/lines
    #:simple-command-line-token #:token-string

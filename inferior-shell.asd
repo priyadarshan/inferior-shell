@@ -1,10 +1,12 @@
 ;;; -*- Lisp -*-
+(in-package :asdf)
 
 (defsystem :inferior-shell
-  :defsystem-depends-on (:asdf)
-  :depends-on (:asdf :xcvb-utils :fare-quasiquote-extras :fare-mop
+  :defsystem-depends-on (:asdf :asdf-driver)
+  :depends-on (:asdf-driver :fare-utils :alexandria :fare-quasiquote-extras :fare-mop
                #+sbcl :sb-posix)
   :description "spawn local or remote processes and shell pipes"
+  :around-compile "asdf-driver:call-with-safe-io-syntax"
   :components
   ((:file "pkgdcl")
    (:file "process-spec" :depends-on ("pkgdcl"))
@@ -17,5 +19,5 @@
    (:file "run-sbcl" :depends-on ("process-spec" "macros" "run-generic"))))
 
 (defmethod perform ((op test-op) (system (eql (find-system :inferior-shell))))
-  (asdf:load-system :inferior-shell-test)
-  (funcall (asdf::find-symbol* :test-suite :inferior-shell-test)))
+  (load-system :inferior-shell-test)
+  (symbol-call :inferior-shell-test :test-suite))
