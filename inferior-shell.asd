@@ -3,7 +3,7 @@
 
 (defsystem :inferior-shell
   :defsystem-depends-on (:asdf :asdf-driver)
-  :depends-on (:asdf-driver :fare-utils :alexandria :fare-quasiquote-extras :fare-mop
+  :depends-on (:asdf-driver :fare-utils :alexandria :fare-quasiquote-extras :fare-mop :optima
                #+sbcl :sb-posix)
   :description "spawn local or remote processes and shell pipes"
   :around-compile "asdf-driver:call-with-safe-io-syntax"

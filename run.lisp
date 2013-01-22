@@ -31,9 +31,9 @@
              spec))))
     (case output
       ((t)
-       (run-program/ command :ignore-error-status ignore-error-status))
+       (run-program command :ignore-error-status ignore-error-status))
       (otherwise
-       (run-program/
+       (run-program
         command :ignore-error-status ignore-error-status :output output)))))
 
 (defun run-process-spec (spec &rest keys &key ignore-error-status output host backend)
