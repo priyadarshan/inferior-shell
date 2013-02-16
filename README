@@ -193,6 +193,12 @@ redirection := (
  >& pn | >&! | ;; redirect both fd 1 and 2 to pathname (respectively, clobbering)
  >>& pn | >>&! ) ;; redirect both fd 1 and 2 to append to pathname (respectively, clobbering)
 
+Note that these are all exported symbols from the INFERIOR-SHELL package,
+except that a few of them are also inherited from COMMON-LISP: < > -
+Therefore the other ones will only work if you either
+use the INFERIOR-SHELL package or
+use a package prefix INFERIOR-SHELL: where appropriate.
+
 A SEXP in the minilanguage can be parsed with parse-process-spec,
 into an object of class process-spec.
 print-process-spec will print a process-spec object;
