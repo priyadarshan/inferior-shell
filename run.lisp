@@ -16,7 +16,9 @@
   (and (typep spec 'command-spec)
        (null (command-redirections spec))))
 
-(defun run-spec (spec &key ignore-error-status output)
+(defun run-spec (spec &rest keys
+                 &key ignore-error-status output element-type external-format &allow-other-keys)
+  (declare (ignore ignore-error-status output element-type external-format))
   (let* ((command
           (if (consp spec)
             (parse-process-spec spec)
@@ -29,12 +31,7 @@
              (print-process-spec spec))
             (string
              spec))))
-    (case output
-      ((t)
-       (run-program command :ignore-error-status ignore-error-status))
-      (otherwise
-       (run-program
-        command :ignore-error-status ignore-error-status :output output)))))
+    (apply 'run-program command :output (case output ((t) nil) (otherwise output)) keys)))
 
 (defun run-process-spec (spec &rest keys &key ignore-error-status output host backend)
   (etypecase host
