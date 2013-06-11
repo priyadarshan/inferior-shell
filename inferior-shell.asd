@@ -20,7 +20,8 @@
           :if-feature (:and :sbcl :sb-thread :unix)))
   :in-order-to ((test-op (load-op inferior-shell/test)))
   :perform (test-op :after (o s)
-              (symbol-call :inferior-shell-test :test-suite)))
+              ;; ASDF2: can't use uiop:symbol-call
+              (funcall (find-symbol (string :test-suite) :inferior-shell-test))))
 
 (defsystem :inferior-shell/test
   :depends-on (:inferior-shell :hu.dwim.stefil)
