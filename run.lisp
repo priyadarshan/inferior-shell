@@ -18,7 +18,7 @@
 
 (defun run-spec (spec &rest keys
                  &key ignore-error-status output element-type external-format &allow-other-keys)
-  (declare (ignore ignore-error-status output element-type external-format))
+  (declare (ignore ignore-error-status element-type external-format))
   (let* ((command
           (if (consp spec)
             (parse-process-spec spec)
