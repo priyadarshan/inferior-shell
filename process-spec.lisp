@@ -244,8 +244,8 @@
              (f '< fd pn
                 '(:input :if-does-not-exist :error)))
            (`(<> ,pn) (c `(<> 0 ,pn)))
-           (`(<> ,pn)
-             (f '<> 0 pn
+           (`(<> ,fd ,pn)
+             (f '<> fd pn
                 '(:io :if-exists :overwrite :if-does-not-exist :error)))
            (`(> ,pn) (c `(> 1 ,pn)))
            (`(> ,fd ,pn)
