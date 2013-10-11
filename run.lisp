@@ -16,9 +16,7 @@
   (and (typep spec 'command-spec)
        (null (command-redirections spec))))
 
-(defun run-spec (spec &rest keys
-                 &key ignore-error-status output element-type external-format &allow-other-keys)
-  (declare (ignore ignore-error-status element-type external-format))
+(defun run-spec (spec &rest keys &key &allow-other-keys)
   (let* ((command
           (if (consp spec)
             (parse-process-spec spec)
@@ -31,40 +29,37 @@
              (print-process-spec spec))
             (string
              spec))))
-    (apply 'run-program command :output (case output ((t) nil) (otherwise output)) keys)))
+    (apply 'run-program command keys)))
 
-(defun run-process-spec (spec &rest keys &key ignore-error-status output host backend)
+(defun run-process-spec (spec &rest keys &key host backend &allow-other-keys)
   (etypecase host
     (null
      (etypecase spec
        (string
-        (run-spec spec :ignore-error-status ignore-error-status :output output))
+        (apply 'run-spec spec keys))
        (cons
         (apply 'run-process-spec (parse-process-spec spec) keys))
        (process-spec
         (ecase (or backend *backend*)
           #+(and sbcl sb-thread unix)
           ((:sbcl)
-	   (let ((interactive (eq :output :interactive)))
-	     (sbcl-run
-	      spec :input interactive :output (or interactive output) :error t
-		   :ignore-error-status ignore-error-status)))
+           (apply 'sbcl-run spec keys))
           ((:auto)
-           (run-spec spec :ignore-error-status ignore-error-status :output output))))))
+           (apply 'run-spec spec keys))))))
     (string
      (apply 'run-process-spec (on-host-spec host spec) :host nil keys))
     (function
      (apply 'run-process-spec (funcall host spec) :host nil keys))))
 
-(defun run (cmd &key time (output t) show host (on-error (list "Command ~S failed~@[ on ~A~]" cmd host)))
+(defun run (cmd &rest keys
+            &key time show host (on-error (list "Command ~S failed~@[ on ~A~]" cmd host)) &allow-other-keys)
   (labels ((process-time ()
              (if time (time (process-command)) (process-command)))
            (process-command ()
-             (handler-case
-                 (run-process-spec
-                  cmd
-                  :ignore-error-status nil :output output :host host)
-               (subprocess-error () (error-behavior on-error)))))
+             (handler-bind
+                 ((subprocess-error #'(lambda (c) (error-behavior on-error c))))
+               (apply 'run-process-spec cmd
+                      :ignore-error-status nil :host host keys))))
     (when show
       (format *trace-output* "; ~A~%" (print-process-spec cmd)))
     (process-time)))

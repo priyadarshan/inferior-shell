@@ -40,11 +40,9 @@
   (with-input-from-string (stream string)
     (do-stream-lines fun stream)))
 
-(defun println (x)
-  (princ x) (terpri) (values))
-
-(defun writeln (x &rest keys)
-  (apply 'write x keys) (terpri) (values))
+(defvar *cr* (coerce #(#\cr) 'string))
+(defvar *lf* (coerce #(#\newline) 'string))
+(defvar *crlf* (coerce #(#\cr #\newline) 'string))
 
 (defun stripln (x)
   (check-type x string)
@@ -53,9 +51,36 @@
          (endcrlfp (and endlfp (<= 2 len) (eql (char x (- len 2)) #\return)))
          (endcrp (equal (last-char x) #\return)))
     (cond
-      ((or endlfp endcrp) (subseq x 0 (- len 1)))
-      (endcrlfp (subseq x 0 (- len 2)))
-      (t x))))
+      (endlfp (values (subseq x 0 (- len 1)) *lf*))
+      (endcrp (values (subseq x 0 (- len 1)) *cr*))
+      (endcrlfp (values (subseq x 0 (- len 2)) *crlf*))
+      (t (values x nil)))))
+
+(defun read-line* (&optional (stream *standard-input*) eof-error-p eof-value recursive-p cr lf)
+  "Similar to READ-LINE, this function also returns as additional values the state about
+whether CR or LF were read. CR, LF and CR+LF are accepted only.
+Partial state accepted as input, too, for parsing in chunks."
+  (loop
+    :with eof = '#:eof
+    :with datap = nil
+    :with out = (make-string-output-stream)
+    :for char = (read-char stream nil eof recursive-p) :do
+      (labels ((out (c) (setf datap t) (write-char c out))
+               (unpeek () (unread-char char stream))
+               (done () (return (values (get-output-stream-string out) cr lf)))
+               (unpeek-done () (unpeek) (done)))
+        (cond
+          ((eql char #\newline)
+           (if lf (unpeek-done) (setf lf t)))
+          ((eql char #\cr)
+           (if (or cr lf) (unpeek-done) (setf cr t)))
+          ((eql char eof)
+           (cond
+             (eof-error-p (read-char stream eof-error-p eof-value recursive-p))
+             (datap (done))
+             (t (return (values eof-value nil nil)))))
+          (t
+           (out char))))))
 
 (defun add-days (year month date days)
   (multiple-value-bind (sec min hr d m y dlsp tz)
