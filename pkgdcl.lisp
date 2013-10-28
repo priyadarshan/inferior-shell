@@ -1,9 +1,7 @@
 #+xcvb (module ())
 
-(in-package :cl)
-
-(asdf/package:define-package :inferior-shell
-  (:mix :fare-utils :alexandria :asdf/driver)
+(uiop/package:define-package :inferior-shell
+  (:mix :fare-utils :uiop :alexandria)
   (:use :cl :optima :named-readtables :fare-mop)
   (:export
    #:run #:run/s #:run/ss #:run/lines

@@ -1,8 +1,9 @@
 ;;; -*- Lisp -*-
 
 (defsystem :inferior-shell
-  :defsystem-depends-on (:asdf #-asdf3 :asdf-driver)
-  :depends-on (#-asdf3 :asdf-driver #+sbcl :sb-posix
+  :defsystem-depends-on (:asdf #-asdf3 :uiop)
+  :depends-on ((:version #+asdf3 :asdf #-asdf3 :uiop "3.0.3")
+               #+sbcl :sb-posix
                :alexandria :optima
                :fare-utils :fare-quasiquote-extras :fare-mop)
   :description "spawn local or remote processes and shell pipes"

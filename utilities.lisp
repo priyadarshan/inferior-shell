@@ -40,22 +40,6 @@
   (with-input-from-string (stream string)
     (do-stream-lines fun stream)))
 
-(defvar *cr* (coerce #(#\cr) 'string))
-(defvar *lf* (coerce #(#\newline) 'string))
-(defvar *crlf* (coerce #(#\cr #\newline) 'string))
-
-(defun stripln (x)
-  (check-type x string)
-  (let* ((len (length x))
-         (endlfp (equal (last-char x) #\linefeed))
-         (endcrlfp (and endlfp (<= 2 len) (eql (char x (- len 2)) #\return)))
-         (endcrp (equal (last-char x) #\return)))
-    (cond
-      (endlfp (values (subseq x 0 (- len 1)) *lf*))
-      (endcrp (values (subseq x 0 (- len 1)) *cr*))
-      (endcrlfp (values (subseq x 0 (- len 2)) *crlf*))
-      (t (values x nil)))))
-
 (defun read-line* (&optional (stream *standard-input*) eof-error-p eof-value recursive-p cr lf)
   "Similar to READ-LINE, this function also returns as additional values the state about
 whether CR or LF were read. CR, LF and CR+LF are accepted only.
