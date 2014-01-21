@@ -105,13 +105,17 @@ RUN CMD &KEY ON-ERROR TIME SHOW HOST OUTPUT
   on which to run the command using ssh if
   it's not an alias for localhost as recognized by CURRENT-HOST-NAME-P
   (be sure to have passphraseless  login using ssh-agent).
-  OUTPUT is one of
-  NIL (default) for inheriting the parent process's stdout,
+  The INPUT, OUTPUT and ERROR-OUTPUT arguments are as for UIOP:RUN-PROGRAM.
+  In particular, OUTPUT is as per UIOP:SLURP-OUTPUT-STREAM one of
+  NIL (default) for no output (redirect to /dev/null),
+  a stream for itself,
+  T for the current *standard-output*,
+  :INTERACTIVE for inheriting the parent process's stdout,
   :LINES for returning one result per line,
   :STRING for returning the output as one big string,
   :STRING/STRIPPED is like :STRING
   but strips any line-ending at the end of the results,
-  just like a shell's `cmd` or $(cmd) would do,
+  just like a shell's `cmd` or $(cmd) would, and
   more options are accepted and you can define your own, as per
   asdf-driver's slurp-input-stream protocol.
   On Windows, RUN will not succeed for pipes, only for simple commands.
