@@ -1,12 +1,13 @@
 ;;; -*- Lisp -*-
 
-(defsystem :inferior-shell
-  :defsystem-depends-on (:asdf #-asdf3 :uiop)
-  :depends-on ((:version #+asdf3 :asdf #-asdf3 :uiop "3.0.3")
-               #+sbcl :sb-posix
-               :alexandria :optima
-               :fare-utils :fare-quasiquote-extras :fare-mop)
+(defsystem "inferior-shell"
   :description "spawn local or remote processes and shell pipes"
+  :version "2.0.0"
+  :defsystem-depends-on (:asdf #-asdf3 "uiop")
+  :depends-on ((:version #+asdf3 "asdf" #-asdf3 "uiop" "3.0.3")
+               #+sbcl "sb-posix"
+               "alexandria" "optima"
+               "fare-utils" "fare-quasiquote-extras" "fare-mop")
   :around-compile "asdf-driver:call-with-safe-io-syntax"
   :components
   ((:file "pkgdcl")
@@ -19,12 +20,11 @@
    #+asdf3
    (:file "run-sbcl" :depends-on ("process-spec" "macros" "run-generic")
           :if-feature (:and :sbcl :sb-thread :unix)))
-  :in-order-to ((test-op (load-op inferior-shell/test)))
-  :perform (test-op :after (o s)
-              ;; ASDF2: can't use uiop:symbol-call
-              (funcall (find-symbol (string :test-suite) :inferior-shell-test))))
+  :in-order-to ((test-op (load-op "inferior-shell/test")))
+  :perform (test-op :after (o s) ;; symbol-call will only work if loaded with ASDF3
+              (symbol-call :inferior-shell-test :test-suite)))
 
-(defsystem :inferior-shell/test
-  :depends-on (:inferior-shell :hu.dwim.stefil)
+(defsystem "inferior-shell/test"
+  :depends-on ("inferior-shell" "hu.dwim.stefil")
   :description "testing inferior-shell"
   :components ((:file "test")))

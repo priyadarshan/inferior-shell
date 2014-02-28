@@ -81,6 +81,7 @@ PRINT-PROCESS-SPEC SPEC &OPTIONAL OUTPUT
 
 *CURRENT-HOST-NAMES*
   a variable, a list of strings, the aliases for the localhost.
+  You may need to initialize it if the defaults don't suffice.
 
 CURRENT-HOST-NAME-P X
   a function, returns true if X is a string member of *CURRENT-HOST-NAMES*
@@ -105,11 +106,12 @@ RUN CMD &KEY ON-ERROR TIME SHOW HOST OUTPUT
   on which to run the command using ssh if
   it's not an alias for localhost as recognized by CURRENT-HOST-NAME-P
   (be sure to have passphraseless  login using ssh-agent).
-  The INPUT, OUTPUT and ERROR-OUTPUT arguments are as for UIOP:RUN-PROGRAM.
+  The INPUT, OUTPUT and ERROR-OUTPUT arguments are as for UIOP:RUN-PROGRAM,
+  except that they default to NIL, T, T respectively instead of NIL, NIL, NIL.
   In particular, OUTPUT is as per UIOP:SLURP-OUTPUT-STREAM one of
-  NIL (default) for no output (redirect to /dev/null),
+  NIL for no output (redirect to /dev/null),
   a stream for itself,
-  T for the current *standard-output*,
+  T (default) for the current *standard-output*,
   :INTERACTIVE for inheriting the parent process's stdout,
   :LINES for returning one result per line,
   :STRING for returning the output as one big string,
@@ -122,13 +124,21 @@ RUN CMD &KEY ON-ERROR TIME SHOW HOST OUTPUT
   On Unix, simple commands on localhost are executed directly, but
   remote commands and pipes are executed by spawning a shell.
 
+RUN/NIL CMD &KEY ON-ERROR TIME SHOW HOST
+  RUN/NIL is a shorthand for RUN with :INPUT :OUTPUT :ERROR-OUTPUT bound to NIL.
+
 RUN/S CMD &KEY ON-ERROR TIME SHOW HOST
-  RUN/S is a shorthand for RUN :OUTPUT 'STRING,
+  RUN/S is a shorthand for RUN with :OUTPUT bound to :STRING,
   returning as a string what the inferior command sent to its standard output.
 
 RUN/SS CMD &KEY ON-ERROR TIME SHOW HOST
   RUN/S is a shorthand for RUN :OUTPUT :STRING/STRIPPED,
   just like a shell's `cmd` or $(cmd) would do.
+
+RUN/INTERACTIVE CMD &KEY ON-ERROR TIME SHOW HOST
+  RUN/INTERACTIVE is a shorthand for RUN with :INPUT :OUTPUT :ERROR-OUTPUT
+  all boud to :INTERACTIVE, so you may run commands that interact with users,
+  inheritting the stdin, stdout and stderr of the current process.
 
 RUN/LINES CMD &KEY ON-ERROR TIME SHOW HOST
   run/lines is a shorthand for RUN :OUTPUT :LINES,

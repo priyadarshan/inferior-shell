@@ -51,29 +51,44 @@
     (function
      (apply 'run-process-spec (funcall host spec) :host nil keys))))
 
-(defun run (cmd &rest keys
-            &key time show host (on-error (list "Command ~S failed~@[ on ~A~]" cmd host)) &allow-other-keys)
+(defun run/nil (cmd &rest keys
+              &key time show host
+                (on-error (list "Command ~S failed~@[ on ~A~]" cmd host))
+              &allow-other-keys)
+  "run command CMD"
   (labels ((process-time ()
              (if time (time (process-command)) (process-command)))
            (process-command ()
              (handler-bind
                  ((subprocess-error #'(lambda (c) (error-behavior on-error c))))
-               (apply 'run-process-spec cmd
-                      :ignore-error-status nil :host host keys))))
+               (apply 'run-process-spec cmd :ignore-error-status nil :host host keys))))
     (when show
       (format *trace-output* "; ~A~%" (print-process-spec cmd)))
     (process-time)))
 
+(defun run (cmd &rest keys
+            &key on-error time show host (output t op) (error-output t eop) &allow-other-keys)
+  "run command CMD"
+  (apply 'run/nil `(,@(unless op `(:output ,output))
+                  ,@(unless eop `(:error-output ,erroroutput))
+                  ,@keys)))
+
 (defun run/s (cmd &rest keys &key on-error time show host)
   "run command CMD, return its standard output results as a string."
   (declare (ignore on-error time show host))
-  (apply 'run cmd :output 'string keys))
+  (apply 'run/nil cmd :output 'string keys))
 
 (defun run/ss (cmd &rest keys &key on-error time show host)
   "Like run/s, but strips the line ending off the result string;
 very much like `cmd` or $(cmd) at the shell"
   (declare (ignore on-error time show host))
-  (apply 'run cmd :output :string/stripped keys))
+  (apply 'run/nil cmd :output :string/stripped keys))
+
+(defun run/interactive (cmd &rest keys &key on-error time show host)
+  "run command CMD interactively."
+  (declare (ignore on-error time show host))
+  (apply 'run/nil cmd :input :interactive :output :interactive :error-output :interactive keys))
+
 
 (defun slurp-stream-string/stripped (input-stream)
   (stripln (slurp-stream-string input-stream)))
@@ -85,4 +100,4 @@ very much like `cmd` or $(cmd) at the shell"
 (defun run/lines (cmd &rest keys &key on-error time show host)
   "Like run/s, but return a list of lines rather than one string"
   (declare (ignore on-error time show host))
-  (apply 'run cmd :output :lines keys))
+  (apply 'run/nil cmd :output :lines keys))
