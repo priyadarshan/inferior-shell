@@ -70,7 +70,7 @@
             &key on-error time show host (output t op) (error-output t eop) &allow-other-keys)
   "run command CMD"
   (apply 'run/nil `(,@(unless op `(:output ,output))
-                  ,@(unless eop `(:error-output ,erroroutput))
+                  ,@(unless eop `(:error-output ,error-output))
                   ,@keys)))
 
 (defun run/s (cmd &rest keys &key on-error time show host)
