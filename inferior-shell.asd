@@ -4,11 +4,11 @@
   :description "spawn local or remote processes and shell pipes"
   :version "2.0.0"
   :defsystem-depends-on (:asdf #-asdf3 "uiop")
-  :depends-on ((:version #+asdf3 "asdf" #-asdf3 "uiop" "3.0.3")
+  :depends-on ((:version #+asdf3 "asdf" #-asdf3 "uiop" "3.0.3") ; input and error-output redirection
                #+sbcl "sb-posix"
                "alexandria" "optima"
                "fare-utils" "fare-quasiquote-extras" "fare-mop")
-  :around-compile "asdf-driver:call-with-safe-io-syntax"
+  :around-compile "uiop:call-with-safe-io-syntax" ;; ensures that quasiquote syntax doesn't escape
   :components
   ((:file "pkgdcl")
    (:file "process-spec" :depends-on ("pkgdcl"))
