@@ -52,15 +52,15 @@
      (apply 'run-process-spec (funcall host spec) :host nil keys))))
 
 (defun run/nil (cmd &rest keys
-              &key time show host
-                (on-error (list "Command ~S failed~@[ on ~A~]" cmd host))
-              &allow-other-keys)
+                &key time show host
+                  (on-error 'signal)
+                &allow-other-keys)
   "run command CMD"
   (labels ((process-time ()
              (if time (time (process-command)) (process-command)))
            (process-command ()
              (handler-bind
-                 ((subprocess-error #'(lambda (c) (error-behavior on-error c))))
+                 ((subprocess-error #'(lambda (c) (call-function on-error c))))
                (apply 'run-process-spec cmd :ignore-error-status nil :host host keys))))
     (when show
       (format *trace-output* "; ~A~%" (print-process-spec cmd)))
