@@ -96,9 +96,10 @@ RUN CMD &KEY ON-ERROR TIME SHOW HOST OUTPUT
   a PROCESS-SPEC object already parsed,
   or a string to be passed to a Unix shell.
   ON-ERROR specifies behavior in case the command doesn't successfully exit
-  with exit code 0, as per FARE-UTILS's ERROR-BEHAVIOR provided with
-  (if a function, invoke it, if a string, issue an error with it,
-  otherwise return it as is).
+  with exit code 0. NIL means continue and return the error code;
+  T (default) means signal the error (same as :ON-ERROR 'SIGNAL);
+  any other value is called as by UIOP:CALL-FUNCTION with the condition as argument,
+  and if it returns, its return values are returned by RUN.
   TIME is a boolean which if true causes the execution to be timed as per TIME.
   SHOW is a boolean which if true causes a message to be sent
   to the *TRACE-OUTPUT* before execution.

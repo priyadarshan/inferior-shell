@@ -52,19 +52,19 @@
      (apply 'run-process-spec (funcall host spec) :host nil keys))))
 
 (defun run/nil (cmd &rest keys
-                &key time show host
-                  (on-error 'signal)
+                &key time show host (on-error t)
                 &allow-other-keys)
   "run command CMD"
-  (labels ((process-time ()
-             (if time (time (process-command)) (process-command)))
-           (process-command ()
-             (handler-bind
-                 ((subprocess-error #'(lambda (c) (call-function on-error c))))
-               (apply 'run-process-spec cmd :ignore-error-status nil :host host keys))))
-    (when show
-      (format *trace-output* "; ~A~%" (print-process-spec cmd)))
-    (process-time)))
+  (when (eq on-error t) (setf on-error 'signal))
+  (when show
+    (format *trace-output* "; ~A~%" (print-process-spec cmd)))
+  (flet ((run-it ()
+           (handler-bind
+               ((subprocess-error #'(lambda (c)
+                                      (if on-error (return-from run-it (call-function on-error c))
+                                          (continue c)))))
+             (apply 'run-process-spec cmd :ignore-error-status nil :host host keys))))
+    (if time (time (run-it)) (run-it))))
 
 (defun run (cmd &rest keys
             &key on-error time show host (output t op) (error-output t eop) &allow-other-keys)
